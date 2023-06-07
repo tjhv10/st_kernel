@@ -1,0 +1,1 @@
+cmd_/home/vboxuser/develop/kernel/st_kernel/Module.symvers := sed 's/ko$$/o/' /home/vboxuser/develop/kernel/st_kernel/modules.order | scripts/mod/modpost -m -a  -o /home/vboxuser/develop/kernel/st_kernel/Module.symvers -e -i Module.symvers   -T -

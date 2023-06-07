@@ -10,7 +10,7 @@
 static dev_t dev;
 static struct cdev cdev;
 static unsigned char *buffer;
-static unsigned char key = 0xFA;
+static unsigned char key = 0xAA;
 
 static int device_open(struct inode *inode, struct file *file) {
     printk(KERN_INFO "Device opened\n");
@@ -26,11 +26,25 @@ static ssize_t device_read(struct file *filp, char __user *buf, size_t len, loff
     if (len > BUF_SIZE)
         len = BUF_SIZE;
 
+    // Decrypt the buffer
+    for (size_t i = 0; i < len; i++)
+        buffer[i] ^= key;
+
+    printk(KERN_INFO "Decrypted Data: %.*s\n", len, buffer);
+
+    // Copy the decrypted buffer to the user
     if (copy_to_user(buf, buffer, len))
         return -EFAULT;
 
+    // Restore the buffer to its original state (encryption)
+    for (size_t i = 0; i < len; i++)
+        buffer[i] ^= key;
+
     return len;
 }
+
+
+
 
 static ssize_t device_write(struct file *filp, const char __user *buf, size_t len, loff_t *offset) {
     if (len > BUF_SIZE)
@@ -42,7 +56,7 @@ static ssize_t device_write(struct file *filp, const char __user *buf, size_t le
     // Perform XOR encryption on the buffer using the key
     for (size_t i = 0; i < len; i++)
         buffer[i] ^= key;
-
+    
     return len;
 }
 

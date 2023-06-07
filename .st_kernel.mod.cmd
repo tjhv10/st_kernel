@@ -1,1 +1,0 @@
-cmd_/home/vboxuser/develop/kernel/st_kernel/st_kernel.mod := printf '%s\n'   st_kernel.o | awk '!x[$$0]++ { print("/home/vboxuser/develop/kernel/st_kernel/"$$0) }' > /home/vboxuser/develop/kernel/st_kernel/st_kernel.mod

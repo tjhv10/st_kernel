@@ -6,11 +6,12 @@
 
 #define DEVICE_NAME "st_kernel"
 #define BUF_SIZE 1024
+#define IOCTL_RESET_DEVICE _IO('k', 0)
 
 static dev_t dev;
 static struct cdev cdev;
 static unsigned char *buffer;
-static unsigned char key = 0xAA;
+static unsigned char key = 0XAB;
 
 static int device_open(struct inode *inode, struct file *file) {
     printk(KERN_INFO "Device opened\n");
@@ -43,21 +44,31 @@ static ssize_t device_read(struct file *filp, char __user *buf, size_t len, loff
     return len;
 }
 
-
-
-
 static ssize_t device_write(struct file *filp, const char __user *buf, size_t len, loff_t *offset) {
     if (len > BUF_SIZE)
         len = BUF_SIZE;
 
+    // Perform XOR encryption on the buffer
+    for (size_t i = 0; i < len; i++)
+        buffer[i] ^= key;
+
     if (copy_from_user(buffer, buf, len))
         return -EFAULT;
 
-    // Perform XOR encryption on the buffer using the key
-    for (size_t i = 0; i < len; i++)
-        buffer[i] ^= key;
-    
     return len;
+}
+
+static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
+    switch (cmd) {
+        case IOCTL_RESET_DEVICE:
+            // Reset the device, perform any necessary cleanup or state reset
+            memset(buffer, 0, BUF_SIZE);
+            printk(KERN_INFO "Device reset\n");
+            break;
+        default:
+            return -EINVAL;  // Invalid command
+    }
+    return 0;
 }
 
 static struct file_operations fops = {
@@ -65,6 +76,7 @@ static struct file_operations fops = {
     .release = device_release,
     .read = device_read,
     .write = device_write,
+    .unlocked_ioctl = device_ioctl,
 };
 
 static int __init st_kernel_init(void) {

@@ -5,7 +5,7 @@
 
 int main() {
     int fd;
-    char message[] = "Hello, XORrrrrrrrrrr!";
+    char message[] = "Hello, XOR!";
     ssize_t bytes_written;
 
     fd = open("/dev/st_kernel", O_WRONLY);
@@ -14,12 +14,12 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    // bytes_written = write(fd, message, sizeof(message));
-    // if (bytes_written == -1) {
-    //     perror("Failed to write to the device file");
-    //     close(fd);
-    //     return EXIT_FAILURE;
-    // }
+    bytes_written = write(fd, message, sizeof(message));
+    if (bytes_written == -1) {
+        perror("Failed to write to the device file");
+        close(fd);
+        return EXIT_FAILURE;
+    }
 
     printf("Message successfully written to the device file\n");
 
